@@ -4,15 +4,14 @@ from c4d import gui
 # REDSHFT tag ID
 REDSHIFT_TAG_ID = 1036222
 
-
 # viewport colors
-tree_color_blue  = c4d.Vector(0.1215,0.3176,0.8117)
-tree_color_lime  = c4d.Vector(0.7333,0.9019,0.1333)
-tree_color_white = c4d.Vector(0.7607,0.7607,0.7607) 
+tree_color_blue   = c4d.Vector(0.1215,0.3176,0.8117)
+tree_color_lime   = c4d.Vector(0.7333,0.9019,0.1333)
+tree_color_white  = c4d.Vector(0.7607,0.7607,0.7607) 
 
-character_namelist_tree = [ 'Main Parent', 'Cube.5', 'Cube.4', 'Cube.3', 'Cube.2']
-character_layer_mats = '_lights_'
-character_layer_objs = 'arbol'
+character_namelist_tree  = [ 'Main Parent', 'Cube.5', 'Cube.4', 'Cube.3', 'Cube.2']
+character_layer_mats     = '_lights_'
+character_layer_objs     = 'arbol'
 
 def get_allObjs(root_selection):
     def GetNextObject(op): # object manager iteration
@@ -57,11 +56,11 @@ def addTag(obj, tag_ID):
     return tag
 
 def add_redshift_tag(obj, layer, geometry, tessellation, tess_min, tess_max, 
-                    displacement, dis_max, dis_min, dis_auto, 
+                    displacement, dis_max, dis_scale, dis_autobump, 
                     reference, ref_source, obj_id, obj_id_value):
     # get obj tags
     obj_tags = obj.GetTags()
-
+    # define tag
     if not obj_tags:
         tag = obj.MakeTag(REDSHIFT_TAG_ID) # new tag
     else:
@@ -70,11 +69,31 @@ def add_redshift_tag(obj, layer, geometry, tessellation, tess_min, tess_max,
             obj_tags_types.append(t.GetType())
             if t.GetType() == REDSHIFT_TAG_ID:
                 tag = t
-
         if not REDSHIFT_TAG_ID in obj_tags_types:
             tag = obj.MakeTag(REDSHIFT_TAG_ID)
 
+    # basic tab
     tag[c4d.ID_LAYER_LINK] = layer
+    # geometry tab
+    if geometry:
+        tag[c4d.REDSHIFT_OBJECT_GEOMETRY_OVERRIDE]                = geometry
+        tag[c4d.REDSHIFT_OBJECT_GEOMETRY_SUBDIVISIONENABLED]      = tessellation
+        tag[c4d.REDSHIFT_OBJECT_GEOMETRY_MINTESSELLATIONLENGTH]   = tess_min
+        tag[c4d.REDSHIFT_OBJECT_GEOMETRY_MAXTESSELLATIONSUBDIVS]  = tess_max
+    # displacement tab
+    if displacement:
+        tag[c4d.REDSHIFT_OBJECT_GEOMETRY_DISPLACEMENTENABLED]     = displacement
+        tag[c4d.REDSHIFT_OBJECT_GEOMETRY_MAXDISPLACEMENT]         = dis_max
+        tag[c4d.REDSHIFT_OBJECT_GEOMETRY_DISPLACEMENTSCALE]       = dis_scale
+        tag[c4d.REDSHIFT_OBJECT_GEOMETRY_AUTOBUMPENABLED]         = dis_autobump
+    # reference projection
+    if reference:
+        tag[c4d.REDSHIFT_OBJECT_REFERENCE_SOURCE]             = ref_source
+        c4d.CallButton(tag(), c4d.REDSHIFT_OBJECT_REFERENCE_BUTTON_CAPTURE)
+    # object id tab
+    if obj_id:
+        tag[c4d.REDSHIFT_OBJECT_OBJECTID_OVERRIDE]            = obj_id
+        tag[c4d.REDSHIFT_OBJECT_OBJECTID_ID]                  = obj_id_value
 
     return tag
 
@@ -127,10 +146,14 @@ def main():
 
     # ------------------------------------------------------
 
+    # add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,0,0,0,0) # template function
+
+    # ------------------------------------------------------
+
     # main parent commands
-    add_redshift_tag(obj_list[0], layer,0,0,0,0,0,0,0,0,0,0,0,0) # add main redshift tag
-    obj_list[0][c4d.ID_LAYER_LINK] = layer # add main parent to obj layer
-    obj_list.remove(obj_list[0])                          # remove main parent from obj list
+    add_redshift_tag(obj_list[0], layer, True, True, 1, 3,0,0,0,0,True, 1,0,0)  # add main redshift tag
+    obj_list[0][c4d.ID_LAYER_LINK] = layer                        # add main parent to obj layer
+    obj_list.remove(obj_list[0])                                  # remove main parent from obj list
 
     # children ops
     for obj in obj_list:
