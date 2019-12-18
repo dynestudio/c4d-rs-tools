@@ -12,9 +12,12 @@ tree_color_blue   = c4d.Vector(0.1215,0.3176,0.8117)
 tree_color_lime   = c4d.Vector(0.7333,0.9019,0.1333)
 tree_color_white  = c4d.Vector(0.7607,0.7607,0.7607) 
 
-tree_nameslist      = [ 'Main Parent', 'Cube.5', 'Cube.4', 'Cube.3', 'Cube.2']
-tree_layer_mats     = '_lights_'
-tree_layer_objs     = 'arbol'
+tree_nameslist      = ['R_XmasTree_eyelid_top','R_XmasTree_eyelid_botton','R_XmasTree_eye','L_XmasTree_eyelid_top',
+                       'L_XmasTree_eyelid_botton','L_XmasTree_eye','XmasTree_tongue','XmasTree_teeths','XmasTree_legs',
+                       'XmasTree_top_2','XmasTree_top_1','XmasTree_band','XmasTree_Knot_3','XmasTree_Knot_2','XmasTree_Knot_1','XmasTree_gloves','XmasTree_body']
+tree_matslist       = ['Tree_Ribbon and Gloves Cloth','Tree_Teeths','Tree_Tongue','Tree_Eye','Tree_Eye_Iris','Tree_Body']
+tree_layer_mats     = 'Materials_Arbol'
+tree_layer_objs     = 'Arbol'
 
 def get_allObjs(root_selection):
     def GetNextObject(op): # object manager iteration
@@ -112,9 +115,11 @@ def find_layer(layer_name):
 def find_mat(mat_list, mat_name):
     for mat in mat_list:
         if mat[c4d.ID_BASELIST_NAME] == mat_name:
-            return mat
+            material = mat
+            return material
         else:
-            return None
+            material = None
+    return material
 
 def addTexTag(obj, layer, mat, projection):
     textag = c4d.TextureTag()
@@ -155,7 +160,7 @@ def main():
 
     # ------------------------------------------------------
 
-    # add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,0,0,0,0) # template function
+    # add_redshift_tag(obj,layer,geometry,tessellation,tess_min,tess_max,displacement,dis_max,dis_scale,dis_autobump,reference,ref_source,obj_id,obj_id_value) # add redshift tag
 
     # ------------------------------------------------------
 
@@ -166,17 +171,113 @@ def main():
 
     # children ops
     for obj in obj_list:
-        if obj.GetName() == 'Cube.4':
+        if obj.GetName() == tree_nameslist[0]: # R_XmasTree_eyelid_top
             display_color(obj,tree_color_blue) # display color
             obj[c4d.ID_LAYER_LINK] = layer     # add layer
-            addTexTag(obj, layer, find_mat(mats_character,'Lambert3'), TAG_TEXTURE_PROJECTION_UVW)          # add material
-            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,0,0,0,0) # add redshift tag
-        elif obj.GetName() == 'Cube.5':
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Body
+            add_redshift_tag(obj,layer, True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,False,False) # add redshift tag
+        
+        elif obj.GetName() == tree_nameslist[1]: # R_XmasTree_eyelid_botton
             display_color(obj,tree_color_blue) # display color
             obj[c4d.ID_LAYER_LINK] = layer     # add layer
-            addTexTag(obj, layer, find_mat(mats_character,'Lambert3'), TAG_TEXTURE_PROJECTION_UVW)          # add material
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Body
+            add_redshift_tag(obj,layer, True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,False,False) # add redshift tag
+        
+        elif obj.GetName() == tree_nameslist[2]: # R_XmasTree_eye
+            display_color(obj,tree_color_white) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            print 'Pre CHECK'
+            print find_mat(mats_character,tree_matslist[3])
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[3]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Eye
+            print 'check final'
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
+        
+        elif obj.GetName() == tree_nameslist[3]: # L_XmasTree_eyelid_top
+            display_color(obj,tree_color_blue) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Body
+            add_redshift_tag(obj,layer, True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,False,False) # add redshift tag
+        
+        elif obj.GetName() == tree_nameslist[4]: # L_XmasTree_eyelid_botton
+            display_color(obj,tree_color_blue) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Body
+            add_redshift_tag(obj,layer, True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,False,False) # add redshift tag
+        
+        elif obj.GetName() == tree_nameslist[5]: # L_XmasTree_eye
+            display_color(obj,tree_color_white) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[3]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Eye
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
 
+        elif obj.GetName() == tree_nameslist[6]: # XmasTree_tongue
+            display_color(obj,tree_color_blue) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[2]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Tongue
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,32) # add redshift tag
+
+        elif obj.GetName() == tree_nameslist[7]: # XmasTree_teeths
+            display_color(obj,tree_color_white) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[1]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Teeths
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
+
+        elif obj.GetName() == tree_nameslist[8]: # XmasTree_legs
+            display_color(obj,tree_color_blue) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_SPHERICAL) # add material - Tree_Body
+            add_redshift_tag(obj,layer,True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,False,False) # add redshift tag
+
+        elif obj.GetName() == tree_nameslist[9]: # XmasTree_top_2
+            display_color(obj,tree_color_lime) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Ribbon and Gloves Cloth
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
+        
+        elif obj.GetName() == tree_nameslist[10]: # XmasTree_top_1
+            display_color(obj,tree_color_lime) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Ribbon and Gloves Cloth
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
+
+        elif obj.GetName() == tree_nameslist[11]: # XmasTree_band
+            display_color(obj,tree_color_lime) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Ribbon and Gloves Cloth
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
+ 
+        elif obj.GetName() == tree_nameslist[12]: # XmasTree_Knot_3
+            display_color(obj,tree_color_lime) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Ribbon and Gloves Cloth
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
+
+        elif obj.GetName() == tree_nameslist[13]: # XmasTree_Knot_2
+            display_color(obj,tree_color_lime) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Ribbon and Gloves Cloth
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
+
+        elif obj.GetName() == tree_nameslist[14]: # XmasTree_Knot_1
+            display_color(obj,tree_color_lime) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Ribbon and Gloves Cloth
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
+
+        elif obj.GetName() == tree_nameslist[15]: # XmasTree_gloves
+            display_color(obj,tree_color_lime) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Ribbon and Gloves Cloth
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
+
+        elif obj.GetName() == tree_nameslist[16]: # XmasTree_body
+            display_color(obj,tree_color_blue) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_SPHERICAL) # add material - Tree_Body
+            add_redshift_tag(obj,layer,True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
+
+        else:
+            None
 
     c4d.EventAdd()
 
