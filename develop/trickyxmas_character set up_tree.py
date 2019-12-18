@@ -1,17 +1,20 @@
 import c4d
 from c4d import gui
 
-# REDSHFT tag ID
-REDSHIFT_TAG_ID = 1036222
+# tags IDs
+TAG_REDSHIFT_ID                   = 1036222
+TAG_REDSHIFT_REFERENCE_SNAPSHOT   = 1
+TAG_TEXTURE_PROJECTION_UVW        = 6
+TAG_TEXTURE_PROJECTION_SPHERICAL  = 0
 
 # viewport colors
 tree_color_blue   = c4d.Vector(0.1215,0.3176,0.8117)
 tree_color_lime   = c4d.Vector(0.7333,0.9019,0.1333)
 tree_color_white  = c4d.Vector(0.7607,0.7607,0.7607) 
 
-character_namelist_tree  = [ 'Main Parent', 'Cube.5', 'Cube.4', 'Cube.3', 'Cube.2']
-character_layer_mats     = '_lights_'
-character_layer_objs     = 'arbol'
+tree_nameslist      = [ 'Main Parent', 'Cube.5', 'Cube.4', 'Cube.3', 'Cube.2']
+tree_layer_mats     = '_lights_'
+tree_layer_objs     = 'arbol'
 
 def get_allObjs(root_selection):
     def GetNextObject(op): # object manager iteration
@@ -62,15 +65,15 @@ def add_redshift_tag(obj, layer, geometry, tessellation, tess_min, tess_max,
     obj_tags = obj.GetTags()
     # define tag
     if not obj_tags:
-        tag = obj.MakeTag(REDSHIFT_TAG_ID) # new tag
+        tag = obj.MakeTag(TAG_REDSHIFT_ID) # new tag
     else:
         obj_tags_types = [] # list of tag types
         for t in obj_tags:
             obj_tags_types.append(t.GetType())
-            if t.GetType() == REDSHIFT_TAG_ID:
+            if t.GetType() == TAG_REDSHIFT_ID:
                 tag = t
-        if not REDSHIFT_TAG_ID in obj_tags_types:
-            tag = obj.MakeTag(REDSHIFT_TAG_ID)
+        if not TAG_REDSHIFT_ID in obj_tags_types:
+            tag = obj.MakeTag(TAG_REDSHIFT_ID)
 
     # basic tab
     tag[c4d.ID_LAYER_LINK] = layer
@@ -106,6 +109,12 @@ def find_layer(layer_name):
             layer = l
     return layer
 
+def find_mat(mat_list, mat_name):
+    for mat in mat_list:
+        if mat[c4d.ID_BASELIST_NAME] == mat_name:
+            return mat
+        else:
+            return None
 
 def addTexTag(obj, layer, mat, projection):
     textag = c4d.TextureTag()
@@ -129,11 +138,11 @@ def main():
         gui.MessageDialog('please select the parent object.')
         return
     # get layer
-    layer = find_layer(character_layer_objs)
+    layer = find_layer(tree_layer_objs)
     if not layer:
         gui.MessageDialog('this scene does not have the needed geometry layer.')
         return
-    layer_mats = find_layer(character_layer_mats)
+    layer_mats = find_layer(tree_layer_mats)
     if not layer:
         gui.MessageDialog('this scene does not have the needed material layer.')
         return
@@ -141,7 +150,7 @@ def main():
     mats            = doc.GetMaterials()
     mats_character  = []
     for mat in mats:
-        if mat[c4d.ID_LAYER_LINK].GetName() == character_layer_mats:
+        if mat[c4d.ID_LAYER_LINK].GetName() == tree_layer_mats:
             mats_character.append(mat)
 
     # ------------------------------------------------------
@@ -151,15 +160,23 @@ def main():
     # ------------------------------------------------------
 
     # main parent commands
-    add_redshift_tag(obj_list[0], layer, True, True, 1, 3,0,0,0,0,True, 1,0,0)  # add main redshift tag
+    add_redshift_tag(obj_list[0], layer, True, True, 1, 3,0,0,0,0,0,0,1,30)  # add main redshift tag
     obj_list[0][c4d.ID_LAYER_LINK] = layer                        # add main parent to obj layer
     obj_list.remove(obj_list[0])                                  # remove main parent from obj list
 
     # children ops
     for obj in obj_list:
-        display_color(obj,tree_color_blue)
+        if obj.GetName() == 'Cube.4':
+            display_color(obj,tree_color_blue) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,'Lambert3'), TAG_TEXTURE_PROJECTION_UVW)          # add material
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,0,0,0,0) # add redshift tag
+        elif obj.GetName() == 'Cube.5':
+            display_color(obj,tree_color_blue) # display color
+            obj[c4d.ID_LAYER_LINK] = layer     # add layer
+            addTexTag(obj, layer, find_mat(mats_character,'Lambert3'), TAG_TEXTURE_PROJECTION_UVW)          # add material
+            add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
 
-    #tag = addTag(obj, c4d.Tcompositing)
 
     c4d.EventAdd()
 
