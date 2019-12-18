@@ -186,10 +186,7 @@ def main():
         elif obj.GetName() == tree_nameslist[2]: # R_XmasTree_eye
             display_color(obj,tree_color_white) # display color
             obj[c4d.ID_LAYER_LINK] = layer     # add layer
-            print 'Pre CHECK'
-            print find_mat(mats_character,tree_matslist[3])
             addTexTag(obj, layer, find_mat(mats_character,tree_matslist[3]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Eye
-            print 'check final'
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
         
         elif obj.GetName() == tree_nameslist[3]: # L_XmasTree_eyelid_top
