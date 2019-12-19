@@ -24,6 +24,7 @@ tree_layer_objs     = 'Arbol'
 # external documents
 tree_document_materials     = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Arbol_v14 (Mats Only).c4d"
 tree_document_eyeslightrig  = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Arbol_v14 (Eyes lights rig).c4d"
+tree_document_tags          = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Arbol_v14 (Tags).c4d"
 
 def get_allObjs(root_selection):
     def GetNextObject(op): # object manager iteration
@@ -109,6 +110,25 @@ def add_redshift_tag(obj, layer, geometry, tessellation, tess_min, tess_max,
 
     return tag
 
+def addTexTag(obj, layer, mat, projection):
+    textag = c4d.TextureTag()
+    textag.SetMaterial(mat)
+    textag[c4d.ID_BASELIST_NAME] = mat[c4d.ID_BASELIST_NAME]
+    textag[c4d.TEXTURETAG_PROJECTION] = projection
+    textag[c4d.ID_LAYER_LINK] = layer
+    obj.InsertTag(textag)
+    return textag
+
+def tag_copy(obj_origin, tag_type, obj_target):
+    obj_tags = obj_origin.GetTags()
+    for tag in obj_tags:
+        if tag.CheckType(tag_type):
+            tag = tag.GetClone()
+            obj_target.InsertTag(tag)
+            return tag
+        else:
+            None
+
 def add_layer(name,color):
     root = doc.GetLayerObjectRoot()
     layer = c4d.documents.LayerObject() # new Layer
@@ -135,15 +155,6 @@ def find_mat(mat_list, mat_name):
             material = None
     return material
 
-def addTexTag(obj, layer, mat, projection):
-    textag = c4d.TextureTag()
-    textag.SetMaterial(mat)
-    textag[c4d.ID_BASELIST_NAME] = mat[c4d.ID_BASELIST_NAME]
-    textag[c4d.TEXTURETAG_PROJECTION] = projection
-    textag[c4d.ID_LAYER_LINK] = layer
-    obj.InsertTag(textag)
-    return textag
-
 def display_color(obj, color):
     obj[c4d.ID_BASEOBJECT_USECOLOR]  = 2 # display color mode on
     obj[c4d.ID_BASEOBJECT_COLOR]     = color
@@ -151,6 +162,8 @@ def display_color(obj, color):
 
 def make_editable(obj):
     obj_next = obj.GetNext()
+    if not obj_next:
+        obj_next = obj.GetPred()
     obj_list = [obj]
     # make obj editable
     obj_poly = c4d.utils.SendModelingCommand(c4d.MCOMMAND_MAKEEDITABLE,obj_list)
@@ -220,6 +233,14 @@ def main():
 
     # ------------------------------------------------------
 
+    # import tags from external document *delete them in child ops
+    c4d.documents.MergeDocument(doc, tree_document_tags, c4d.SCENEFILTER_OBJECTS|c4d.SCENEFILTER_MATERIALS , None)
+    obj_tag_eyes   = doc.SearchObject('R_XmasTree_eye_tags')
+    obj_tag_tongue = doc.SearchObject('XmasTree_tongue_tags')
+    obj_tag_body   = doc.SearchObject('XmasTree_body_tags')
+
+    # ------------------------------------------------------
+
     # add_redshift_tag(obj,layer,geometry,tessellation,tess_min,tess_max,displacement,dis_max,dis_scale,dis_autobump,reference,ref_source,obj_id,obj_id_value) # add redshift tag
 
     # ------------------------------------------------------
@@ -250,6 +271,7 @@ def main():
             obj[c4d.ID_LAYER_LINK] = layer     # add layer
             addTexTag(obj, layer, find_mat(mats_character,tree_matslist[3]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Eye
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
+            tag_copy(obj_tag_eyes, c4d.Tpolygonselection,obj) # copy polygon selection tags
         
         elif obj.GetName() == tree_nameslist[3]: # L_XmasTree_eyelid_top
             display_color(obj,tree_color_blue) # display color
@@ -268,12 +290,17 @@ def main():
             obj[c4d.ID_LAYER_LINK] = layer     # add layer
             addTexTag(obj, layer, find_mat(mats_character,tree_matslist[3]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Eye
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
+            tag_copy(obj_tag_eyes, c4d.Tpolygonselection,obj) # copy polygon selection tags
+            obj_tag_eyes.Remove()
 
         elif obj.GetName() == tree_nameslist[6]: # XmasTree_tongue
+            obj = make_editable(obj)
             display_color(obj,tree_color_blue) # display color
             obj[c4d.ID_LAYER_LINK] = layer     # add layer
             addTexTag(obj, layer, find_mat(mats_character,tree_matslist[2]), TAG_TEXTURE_PROJECTION_UVW) # add material - Tree_Tongue
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,32) # add redshift tag
+            tag_copy(obj_tag_tongue, c4d.Tvertexmap,obj) # copy polygon selection tags
+            obj_tag_tongue.Remove()
 
         elif obj.GetName() == tree_nameslist[7]: # XmasTree_teeths
             display_color(obj,tree_color_white) # display color
@@ -330,10 +357,13 @@ def main():
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
 
         elif obj.GetName() == tree_nameslist[16]: # XmasTree_body
+            obj = make_editable(obj)
             display_color(obj,tree_color_blue) # display color
             obj[c4d.ID_LAYER_LINK] = layer     # add layer
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_SPHERICAL) # add material - Tree_Body
+            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_SPHERICAL) # add material - Tree_Body
             add_redshift_tag(obj,layer,True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
+            tag_copy(obj_tag_body, c4d.Tvertexmap,obj) # copy polygon selection tags
+            obj_tag_body.Remove()
 
         else:
             None
