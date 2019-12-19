@@ -7,17 +7,22 @@ TAG_REDSHIFT_REFERENCE_SNAPSHOT   = 1
 TAG_TEXTURE_PROJECTION_UVW        = 6
 TAG_TEXTURE_PROJECTION_SPHERICAL  = 0
 
-# viewport colors
-tree_color_blue   = c4d.Vector(0.1215,0.3176,0.8117)
-tree_color_lime   = c4d.Vector(0.7333,0.9019,0.1333)
-tree_color_white  = c4d.Vector(0.7607,0.7607,0.7607) 
+# colors
+tree_color_blue      = c4d.Vector(0.1215,0.3176,0.8117)
+tree_color_lime      = c4d.Vector(0.7333,0.9019,0.1333)
+tree_color_white     = c4d.Vector(0.7607,0.7607,0.7607)
+tree_color_geolayer  = c4d.Vector(0.3137,0.5921,1)
 
+# names
 tree_nameslist      = ['R_XmasTree_eyelid_top','R_XmasTree_eyelid_botton','R_XmasTree_eye','L_XmasTree_eyelid_top',
                        'L_XmasTree_eyelid_botton','L_XmasTree_eye','XmasTree_tongue','XmasTree_teeths','XmasTree_legs',
                        'XmasTree_top_2','XmasTree_top_1','XmasTree_band','XmasTree_Knot_3','XmasTree_Knot_2','XmasTree_Knot_1','XmasTree_gloves','XmasTree_body']
 tree_matslist       = ['Tree_Ribbon and Gloves Cloth','Tree_Teeths','Tree_Tongue','Tree_Eye','Tree_Eye_Iris','Tree_Body']
 tree_layer_mats     = 'Materials_Arbol'
 tree_layer_objs     = 'Arbol'
+
+# external documents
+#tree_document_materials = 
 
 def get_allObjs(root_selection):
     def GetNextObject(op): # object manager iteration
@@ -103,6 +108,14 @@ def add_redshift_tag(obj, layer, geometry, tessellation, tess_min, tess_max,
 
     return tag
 
+def add_layer(name,color):
+    root = doc.GetLayerObjectRoot()
+    layer = c4d.documents.LayerObject() # new Layer
+    layer.SetName(name)  
+    layer[c4d.ID_LAYER_COLOR] = color
+    layer.InsertUnder(root)
+    return layer
+
 def find_layer(layer_name):
     root = doc.GetLayerObjectRoot()
     LayersList = root.GetChildren() 
@@ -145,8 +158,13 @@ def main():
     # get layer
     layer = find_layer(tree_layer_objs)
     if not layer:
-        gui.MessageDialog('this scene does not have the needed geometry layer.')
-        return
+        question_string = "Not found geometry layer. \n Do you want create it?"
+        open_layer_question = c4d.gui.QuestionDialog(question_string)
+        if not open_layer_question:
+            return
+        else:
+            layer = add_layer(tree_layer_objs,tree_color_geolayer)
+
     layer_mats = find_layer(tree_layer_mats)
     if not layer:
         gui.MessageDialog('this scene does not have the needed material layer.')
@@ -168,6 +186,8 @@ def main():
     add_redshift_tag(obj_list[0], layer, True, True, 1, 3,0,0,0,0,0,0,1,30)  # add main redshift tag
     obj_list[0][c4d.ID_LAYER_LINK] = layer                        # add main parent to obj layer
     obj_list.remove(obj_list[0])                                  # remove main parent from obj list
+
+    # ------------------------------------------------------
 
     # children ops
     for obj in obj_list:
@@ -275,6 +295,8 @@ def main():
 
         else:
             None
+
+        # ------------------------------------------------------
 
     c4d.EventAdd()
 
