@@ -1,5 +1,5 @@
 import c4d
-from c4d import gui
+from c4d import gui, utils
 
 # tags IDs
 TAG_REDSHIFT_ID                   = 1036222
@@ -149,6 +149,19 @@ def display_color(obj, color):
     obj[c4d.ID_BASEOBJECT_COLOR]     = color
     return True
 
+def make_editable(obj):
+    obj_next = obj.GetNext()
+    obj_list = [obj]
+    # make obj editable
+    obj_poly = c4d.utils.SendModelingCommand(c4d.MCOMMAND_MAKEEDITABLE,obj_list)
+    # return obj only
+    obj_new = obj_poly[0] ; doc.InsertObject(obj_new)
+    # organize new obj in obj manager
+    firstObj = doc.GetFirstObject() # get new editable object
+    firstObj.InsertBefore(obj_next)
+
+    return obj_new
+
 # Main function
 def main():
     # ------------------------------------------------------
@@ -193,10 +206,17 @@ def main():
     # ------------------------------------------------------
 
     # add eyes geometries into eyes lights rig
-    tree_eye_r = doc.SearchObject('R_XmasTree_eye')
-    tree_eye_l = doc.SearchObject('L_XmasTree_eye')
+    tree_eye_r = make_editable(doc.SearchObject('R_XmasTree_eye'))
+    tree_eye_l = make_editable(doc.SearchObject('L_XmasTree_eye'))
     obj_eyes_lighstrig[c4d.ID_USERDATA,3] = tree_eye_r # add right eye
     obj_eyes_lighstrig[c4d.ID_USERDATA,6] = tree_eye_l # add left eye
+
+    # add geometries into include light lists
+    lightR_InEx = c4d.InExcludeData() ; lightR_InEx.InsertObject(tree_eye_r, 1)
+    lightL_InEx = c4d.InExcludeData() ; lightL_InEx.InsertObject(tree_eye_l, 1)
+    light_eye_R = doc.SearchObject('Eye R - Disc Light') ; light_eye_L = doc.SearchObject('Eye L - Disc Light') 
+    light_eye_R[c4d.REDSHIFT_LIGHT_EXCLUSION_LIST] = lightR_InEx
+    light_eye_L[c4d.REDSHIFT_LIGHT_EXCLUSION_LIST] = lightL_InEx
 
     # ------------------------------------------------------
 
