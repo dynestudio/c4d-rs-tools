@@ -159,6 +159,11 @@ def make_editable(obj):
 def main():
     # ------------------------------------------------------
 
+    # get original obj list
+    obj_list_origin = get_allObjs(doc.GetFirstObject())
+    
+    # ------------------------------------------------------
+
     # load external alembic
     load_dlg = c4d.storage.LoadDialog(type=c4d.FILESELECTTYPE_ANYTHING, title="", flags=c4d.FILESELECT_LOAD, force_suffix="", def_path="", def_file="")
     if not load_dlg:
@@ -194,6 +199,11 @@ def main():
 
     # make obj list with children
     obj_list = get_allObjs(null)
+    for obj in obj_list_origin:
+        if obj in obj_list:
+            obj_list.remove(obj)
+        else:
+            continue
 
     # ------------------------------------------------------
     # import external documents
@@ -254,10 +264,6 @@ def main():
 
     # ------------------------------------------------------
 
-    # add_redshift_tag(obj,layer,geometry,tessellation,tess_min,tess_max,displacement,dis_max,dis_scale,dis_autobump,reference,ref_source,obj_id,obj_id_value) # add redshift tag
-
-    # ------------------------------------------------------
-
     # add all objs in layer
     for obj in obj_list:
         obj[c4d.ID_LAYER_LINK] = layer
@@ -268,6 +274,10 @@ def main():
     main_parent = null
     add_redshift_tag(main_parent, layer, True, True, 1, 3,0,0,0,0,0,0,1,30)  # add main redshift tag
     obj_list.remove(null)                                  # remove main parent from obj list
+
+    # ------------------------------------------------------
+
+    # add_redshift_tag(obj,layer,geometry,tessellation,tess_min,tess_max,displacement,dis_max,dis_scale,dis_autobump,reference,ref_source,obj_id,obj_id_value) # add redshift tag
 
     # ------------------------------------------------------
 

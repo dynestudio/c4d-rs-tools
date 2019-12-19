@@ -11,21 +11,25 @@ TAG_TEXTURE_PROJECTION_SPHERICAL  = 0
 OBJ_ABC_GENERATOR  = 1028083
 
 # colors
-tree_color_blue      = c4d.Vector(0.1215,0.3176,0.8117)
-tree_color_lime      = c4d.Vector(0.7333,0.9019,0.1333)
-tree_color_white     = c4d.Vector(0.7607,0.7607,0.7607)
-tree_color_geolayer  = c4d.Vector(0.3137,0.5921,1)
+elf_color_blue       = c4d.Vector(0.1725,0.2117,0.4705)
+elf_color_white      = c4d.Vector(0.7019,0.7019,0.7019)
+elf_color_cyan       = c4d.Vector(0.1960,0.5803,0.8196)
+elf_color_black      = c4d.Vector(0.1019,0.1019,0.1019)
+elf_color_lightblue  = c4d.Vector(0.7098,0.7019,0.7411)
+elf_color_red        = c4d.Vector(0.6588,0.2588,0.3294)
+elf_color_pink       = c4d.Vector(0.6705,0.5411,0.6196)
 
 # names
-tree_nameslist      = []
-tree_matslist       = ['Elf_Boots Laces','Elf_Boots','Elf_Elf_Hat Lines','Elf_Elf_Hat Circle','Elf_Arms and Legs Cloth','Elf_Cloth Light Blue',
+elf01_nameslist      = ['T_shirt','Pants','Nose','Lice_R_5','Lice_R_4','Lice_R_3','Lice_R_2','Lice_R_1','Lice_L_5','Lice_L_4','Lice_L_3',
+                        'Lice_L_2','Lice_L_1','Hat2','Hand_R','Hand_L','Hair','Button','Boot_R','Boot_L','Body','Mouth_geo','Eye_R_geo','Eye_L_geo']
+elf_matslist       = ['Elf_Boots Laces','Elf_Boots','Elf_Elf_Hat Lines','Elf_Elf_Hat Circle','Elf_Arms and Legs Cloth','Elf_Cloth Light Blue',
                         'Elf_Cloth Dark Grey','Elf_Clorh Pink','Elf_Clorh Blue','Elf_Hands','Elf_Eyes and Mouth','Elf_Hair White','Elf_Hair Blue','Elf_Nose Blue','Elf_Nose Red','Elf_Body']
-tree_layer_mats     = 'Materials Duende'
-tree_layer_objs     = 'Duende'
+elf_layer_mats     = 'Materials Duende'
+elf_layer_objs     = 'Duende'
 
 # external documents
-tree_document_materials     = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Duende_v12 (Mats Only).c4d"
-tree_document_tags          = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Duende_v12 (Tags).c4d"
+elf_document_materials     = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Duende_v12 (Mats Only).c4d"
+elf_document_tags          = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Duende_v12 (Tags).c4d"
 
 # ------------------------------------------------------
 
@@ -157,6 +161,11 @@ def make_editable(obj):
 def main():
     # ------------------------------------------------------
 
+    # get original obj list
+    obj_list_origin = get_allObjs(doc.GetFirstObject())
+
+    # ------------------------------------------------------
+
     # load external alembic
     load_dlg = c4d.storage.LoadDialog(type=c4d.FILESELECTTYPE_ANYTHING, title="", flags=c4d.FILESELECT_LOAD, force_suffix="", def_path="", def_file="")
     if not load_dlg:
@@ -192,30 +201,28 @@ def main():
 
     # make obj list with children
     obj_list = get_allObjs(null)
+    for obj in obj_list_origin:
+        if obj in obj_list:
+            obj_list.remove(obj)
+        else:
+            continue
 
     # ------------------------------------------------------
     # import external documents
 
     # import materials and layers
-    c4d.documents.MergeDocument(doc, tree_document_materials, c4d.SCENEFILTER_OBJECTS|c4d.SCENEFILTER_MATERIALS , None)
-    obj_mat = doc.SearchObject('Materials_Arbol') # find new object
+    c4d.documents.MergeDocument(doc, elf_document_materials, c4d.SCENEFILTER_OBJECTS|c4d.SCENEFILTER_MATERIALS , None)
+    obj_mat = doc.SearchObject('Materials_Duende') # find new object
     obj_mat.Remove() # delete null obj
-
-    # import eyes lights rig
-    c4d.documents.MergeDocument(doc, tree_document_eyeslightrig, c4d.SCENEFILTER_OBJECTS|c4d.SCENEFILTER_MATERIALS , None)
-    obj_eyes_lighstrig = doc.SearchObject('Eyes Rig') # find new object
-    main_lights = doc.SearchObject('_lights_') # find main lights group
-    if main_lights:
-        obj_eyes_lighstrig.InsertUnder(main_lights) # insert eyes lights rig inside main light group
 
     # ------------------------------------------------------
 
     # get layer
-    layer = find_layer(tree_layer_objs)
+    layer = find_layer(elf_layer_objs)
     if not layer:
             return
 
-    layer_mats = find_layer(tree_layer_mats)
+    layer_mats = find_layer(elf_layer_mats)
     if not layer:
         gui.MessageDialog('this scene does not have the needed material layer.')
         return
@@ -224,35 +231,15 @@ def main():
     mats_character  = []
     for mat in mats:
         if  mat[c4d.ID_LAYER_LINK]:
-            if mat[c4d.ID_LAYER_LINK].GetName() == tree_layer_mats:
+            if mat[c4d.ID_LAYER_LINK].GetName() == elf_layer_mats:
                 mats_character.append(mat)
 
     # ------------------------------------------------------
 
-    # add eyes geometries into eyes lights rig
-    tree_eye_r = make_editable(doc.SearchObject('R_XmasTree_eye'))
-    tree_eye_l = make_editable(doc.SearchObject('L_XmasTree_eye'))
-    obj_eyes_lighstrig[c4d.ID_USERDATA,3] = tree_eye_r # add right eye
-    obj_eyes_lighstrig[c4d.ID_USERDATA,6] = tree_eye_l # add left eye
-
-    # add geometries into include light lists
-    lightR_InEx = c4d.InExcludeData() ; lightR_InEx.InsertObject(tree_eye_r, 1)
-    lightL_InEx = c4d.InExcludeData() ; lightL_InEx.InsertObject(tree_eye_l, 1)
-    light_eye_R = doc.SearchObject('Eye R - Disc Light') ; light_eye_L = doc.SearchObject('Eye L - Disc Light') 
-    light_eye_R[c4d.REDSHIFT_LIGHT_EXCLUSION_LIST] = lightR_InEx
-    light_eye_L[c4d.REDSHIFT_LIGHT_EXCLUSION_LIST] = lightL_InEx
-
-    # ------------------------------------------------------
-
     # import tags from external document *delete them in child ops
-    c4d.documents.MergeDocument(doc, tree_document_tags, c4d.SCENEFILTER_OBJECTS|c4d.SCENEFILTER_MATERIALS , None)
-    obj_tag_eyes   = doc.SearchObject('R_XmasTree_eye_tags')
-    obj_tag_tongue = doc.SearchObject('XmasTree_tongue_tags')
-    obj_tag_body   = doc.SearchObject('XmasTree_body_tags')
-
-    # ------------------------------------------------------
-
-    # add_redshift_tag(obj,layer,geometry,tessellation,tess_min,tess_max,displacement,dis_max,dis_scale,dis_autobump,reference,ref_source,obj_id,obj_id_value) # add redshift tag
+    c4d.documents.MergeDocument(doc, elf_document_tags, c4d.SCENEFILTER_OBJECTS|c4d.SCENEFILTER_MATERIALS , None)
+    obj_tag_pants2  = doc.SearchObject('Pants2')
+    obj_tag_body    = doc.SearchObject('Body')
 
     # ------------------------------------------------------
 
@@ -264,105 +251,111 @@ def main():
 
     # main parent commands
     main_parent = null
-    add_redshift_tag(main_parent, layer, True, True, 1, 3,0,0,0,0,0,0,1,30)  # add main redshift tag
+    add_redshift_tag(main_parent, layer, True, True, 4, 6,0,0,0,0,0,0,1,40)  # add main redshift tag
     obj_list.remove(null)                                  # remove main parent from obj list
+
+    return
+
+    # ------------------------------------------------------
+
+    # add_redshift_tag(obj,layer,geometry,tessellation,tess_min,tess_max,displacement,dis_max,dis_scale,dis_autobump,reference,ref_source,obj_id,obj_id_value) # add redshift tag
 
     # ------------------------------------------------------
 
     # children ops
     for obj in obj_list:
-        if obj.GetName() == tree_nameslist[0]: # R_XmasTree_eyelid_top
-            display_color(obj,tree_color_blue) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Body
+        if obj.GetName() == elf01_nameslist[0]: # R_XmasTree_eyelid_top
+            display_color(obj,elf_color_blue) # display color
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[5]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Body
             add_redshift_tag(obj,layer, True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,False,False) # add redshift tag
         
-        elif obj.GetName() == tree_nameslist[1]: # R_XmasTree_eyelid_botton
-            display_color(obj,tree_color_blue) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Body
+        elif obj.GetName() == elf01_nameslist[1]: # R_XmasTree_eyelid_botton
+            display_color(obj,elf_color_blue) # display color
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[5]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Body
             add_redshift_tag(obj,layer, True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,False,False) # add redshift tag
         
-        elif obj.GetName() == tree_nameslist[2]: # R_XmasTree_eye
-            #display_color(obj,tree_color_white) # display color
-            tag = tag_copy(obj_tag_eyes, c4d.Tpolygonselection,obj) # copy polygon selection tags
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[3]), TAG_TEXTURE_PROJECTION_UVW, tag.GetName()) # add material - Tree_Eye
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[4]), TAG_TEXTURE_PROJECTION_UVW, '') # add material - Tree_Iris
+        elif obj.GetName() == elf01_nameslist[2]: # R_XmasTree_eye
+            #display_color(obj,elf_color_white) # display color
+            tag = tag_copy(obj_tag_pants2, c4d.Tpolygonselection,obj) # copy polygon selection tags
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[3]), TAG_TEXTURE_PROJECTION_UVW, tag.GetName()) # add material - Tree_Eye
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[4]), TAG_TEXTURE_PROJECTION_UVW, '') # add material - Tree_Iris
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
         
-        elif obj.GetName() == tree_nameslist[3]: # L_XmasTree_eyelid_top
-            display_color(obj,tree_color_blue) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Body
+        elif obj.GetName() == elf01_nameslist[3]: # L_XmasTree_eyelid_top
+            display_color(obj,elf_color_blue) # display color
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[5]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Body
             add_redshift_tag(obj,layer, True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,False,False) # add redshift tag
         
-        elif obj.GetName() == tree_nameslist[4]: # L_XmasTree_eyelid_botton
-            display_color(obj,tree_color_blue) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Body
+        elif obj.GetName() == elf01_nameslist[4]: # L_XmasTree_eyelid_botton
+            display_color(obj,elf_color_blue) # display color
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[5]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Body
             add_redshift_tag(obj,layer, True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,False,False) # add redshift tag
         
-        elif obj.GetName() == tree_nameslist[5]: # L_XmasTree_eye
-            #display_color(obj,tree_color_white) # display color
-            tag = tag_copy(obj_tag_eyes, c4d.Tpolygonselection,obj) # copy polygon selection tags
-            obj_tag_eyes.Remove()
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[3]), TAG_TEXTURE_PROJECTION_UVW, tag.GetName()) # add material - Tree_Eye
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[4]), TAG_TEXTURE_PROJECTION_UVW, '') # add material - Tree_Iris
+        elif obj.GetName() == elf01_nameslist[5]: # L_XmasTree_eye
+            #display_color(obj,elf_color_white) # display color
+            tag = tag_copy(obj_tag_pants2, c4d.Tpolygonselection,obj) # copy polygon selection tags
+            obj_tag_pants2.Remove()
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[3]), TAG_TEXTURE_PROJECTION_UVW, tag.GetName()) # add material - Tree_Eye
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[4]), TAG_TEXTURE_PROJECTION_UVW, '') # add material - Tree_Iris
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
 
-        elif obj.GetName() == tree_nameslist[6]: # XmasTree_tongue
+        elif obj.GetName() == elf01_nameslist[6]: # XmasTree_tongue
             obj = make_editable(obj)
-            display_color(obj,tree_color_blue) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[2]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Tongue
+            display_color(obj,elf_color_blue) # display color
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[2]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Tongue
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,32) # add redshift tag
             tag_copy(obj_tag_tongue, c4d.Tvertexmap,obj) # copy polygon selection tags
             obj_tag_tongue.Remove()
 
-        elif obj.GetName() == tree_nameslist[7]: # XmasTree_teeths
-            display_color(obj,tree_color_white) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[1]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Teeths
+        elif obj.GetName() == elf01_nameslist[7]: # XmasTree_teeths
+            display_color(obj,elf_color_white) # display color
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[1]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Teeths
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
 
-        elif obj.GetName() == tree_nameslist[8]: # XmasTree_legs
-            display_color(obj,tree_color_blue) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_SPHERICAL,'') # add material - Tree_Body
+        elif obj.GetName() == elf01_nameslist[8]: # XmasTree_legs
+            display_color(obj,elf_color_blue) # display color
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[5]), TAG_TEXTURE_PROJECTION_SPHERICAL,'') # add material - Tree_Body
             add_redshift_tag(obj,layer,True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,False,False) # add redshift tag
 
-        elif obj.GetName() == tree_nameslist[9]: # XmasTree_top_2
+        elif obj.GetName() == elf01_nameslist[9]: # XmasTree_top_2
             display_color(obj,tree_color_lime) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
         
-        elif obj.GetName() == tree_nameslist[10]: # XmasTree_top_1
+        elif obj.GetName() == elf01_nameslist[10]: # XmasTree_top_1
             display_color(obj,tree_color_lime) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
 
-        elif obj.GetName() == tree_nameslist[11]: # XmasTree_band
+        elif obj.GetName() == elf01_nameslist[11]: # XmasTree_band
             display_color(obj,tree_color_lime) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
  
-        elif obj.GetName() == tree_nameslist[12]: # XmasTree_Knot_3
+        elif obj.GetName() == elf01_nameslist[12]: # XmasTree_Knot_3
             display_color(obj,tree_color_lime) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
 
-        elif obj.GetName() == tree_nameslist[13]: # XmasTree_Knot_2
+        elif obj.GetName() == elf01_nameslist[13]: # XmasTree_Knot_2
             display_color(obj,tree_color_lime) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
 
-        elif obj.GetName() == tree_nameslist[14]: # XmasTree_Knot_1
+        elif obj.GetName() == elf01_nameslist[14]: # XmasTree_Knot_1
             display_color(obj,tree_color_lime) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
 
-        elif obj.GetName() == tree_nameslist[15]: # XmasTree_gloves
+        elif obj.GetName() == elf01_nameslist[15]: # XmasTree_gloves
             display_color(obj,tree_color_lime) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[0]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Ribbon and Gloves Cloth
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,31) # add redshift tag
 
-        elif obj.GetName() == tree_nameslist[16]: # XmasTree_body
+        elif obj.GetName() == elf01_nameslist[16]: # XmasTree_body
             obj = make_editable(obj)
-            display_color(obj,tree_color_blue) # display color
-            addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_SPHERICAL,'') # add material - Tree_Body
+            display_color(obj,elf_color_blue) # display color
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[5]), TAG_TEXTURE_PROJECTION_SPHERICAL,'') # add material - Tree_Body
             add_redshift_tag(obj,layer,True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
             tag_copy(obj_tag_body, c4d.Tvertexmap,obj) # copy polygon selection tags
             obj_tag_body.Remove()
@@ -374,7 +367,7 @@ def main():
 
     c4d.EventAdd()
 
-    print 'Tree imported successfully.'
+    print 'Elf 01 imported successfully.'
 
 # Execute main()
 if __name__=='__main__':
