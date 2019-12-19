@@ -1,11 +1,14 @@
 import c4d
-from c4d import gui, utils
+from c4d import gui, utils, storage
 
 # tags IDs
 TAG_REDSHIFT_ID                   = 1036222
 TAG_REDSHIFT_REFERENCE_SNAPSHOT   = 1
 TAG_TEXTURE_PROJECTION_UVW        = 6
 TAG_TEXTURE_PROJECTION_SPHERICAL  = 0
+
+# obj IDs
+OBJ_ABC_GENERATOR  = 1028083
 
 # colors
 tree_color_blue      = c4d.Vector(0.1215,0.3176,0.8117)
@@ -180,11 +183,53 @@ def make_editable(obj):
 def main():
     # ------------------------------------------------------
 
+    '''
     # get objs
     obj_list = get_allObjs(op)
     if not obj_list:
         gui.MessageDialog('please select the parent object.')
         return
+    '''
+    # load external alembic
+    load_dlg = c4d.storage.LoadDialog(type=c4d.FILESELECTTYPE_ANYTHING, title="", flags=c4d.FILESELECT_LOAD, force_suffix="", def_path="", def_file="")
+    if not load_dlg:
+        return
+    c4d.documents.MergeDocument(doc, load_dlg, c4d.SCENEFILTER_OBJECTS|c4d.SCENEFILTER_MATERIALS , None)
+
+    # loop elements to organize new alembic objs
+    obj = doc.GetFirstObject()
+    obj_loop = True
+    obj_list = [obj]
+    # abc objs loop iterations
+    while obj_loop:
+        obj = obj.GetNext()
+        if obj.GetType() == OBJ_ABC_GENERATOR:
+            obj_list.append(obj)
+        else:
+            obj_loop = False
+
+    #for obj in obj_list:
+    #    obj.SetBit(c4d.BIT_ACTIVE)
+
+    if len(obj_list) == 1:
+        nullm = obj_list[0].GetMg()
+    else:
+        nullm = c4d.Matrix()
+        nullm.off = sum([ob.GetMg().off for ob in obj_list])/ len(obj_list)
+    
+    null = c4d.BaseObject(c4d.Onull)
+    null[c4d.ID_BASELIST_NAME] = 'nombre de prueba'
+    null.InsertBefore(obj_list[0])
+    null.SetBit(c4d.BIT_ACTIVE)
+    null.SetMg(nullm)
+    
+    for ob in obj_list:
+        m = ob.GetMg()
+        ob.InsertUnderLast(null)
+        ob.DelBit(c4d.BIT_ACTIVE)
+        ob.SetMg(m)
+    
+    # meter null de rig en null de lights
 
     # ------------------------------------------------------
     # import external documents
@@ -247,9 +292,10 @@ def main():
     # ------------------------------------------------------
 
     # main parent commands
-    add_redshift_tag(obj_list[0], layer, True, True, 1, 3,0,0,0,0,0,0,1,30)  # add main redshift tag
-    obj_list[0][c4d.ID_LAYER_LINK] = layer                        # add main parent to obj layer
-    obj_list.remove(obj_list[0])                                  # remove main parent from obj list
+    main_parent = null
+    add_redshift_tag(main_parent, layer, True, True, 1, 3,0,0,0,0,0,0,1,30)  # add main redshift tag
+    main_parent[c4d.ID_LAYER_LINK] = layer                        # add main parent to obj layer
+    #obj_list.remove(obj_list[0])                                  # remove main parent from obj list
 
     # ------------------------------------------------------
 
