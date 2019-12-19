@@ -324,7 +324,6 @@ def main():
             addTexTag(obj, layer, find_mat(mats_character,tree_matslist[2]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Tree_Tongue
             add_redshift_tag(obj,layer,0,0,0,0,0,0,0,0,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,True,32) # add redshift tag
             tag_copy(obj_tag_tongue, c4d.Tvertexmap,obj) # copy polygon selection tags
-            obj_tag_tongue.Remove()
 
         elif obj.GetName() == tree_nameslist[7]: # XmasTree_teeths
             display_color(obj,tree_color_white) # display color
@@ -377,12 +376,17 @@ def main():
             addTexTag(obj, layer, find_mat(mats_character,tree_matslist[5]), TAG_TEXTURE_PROJECTION_SPHERICAL,'') # add material - Tree_Body
             add_redshift_tag(obj,layer,True,True,0,3,True,1,1,False,True,TAG_REDSHIFT_REFERENCE_SNAPSHOT,0,0) # add redshift tag
             tag_copy(obj_tag_body, c4d.Tvertexmap,obj) # copy polygon selection tags
-            obj_tag_body.Remove()
 
         else:
             None
 
-        # ------------------------------------------------------
+    # ------------------------------------------------------
+
+    # remove imported objects
+    obj_tag_tongue.Remove()
+    obj_tag_body.Remove()
+
+    # ------------------------------------------------------
 
     c4d.EventAdd()
 
