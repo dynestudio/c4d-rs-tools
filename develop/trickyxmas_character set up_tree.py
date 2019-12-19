@@ -29,47 +29,7 @@ tree_document_materials     = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\
 tree_document_eyeslightrig  = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Arbol_v14 (Eyes lights rig).c4d"
 tree_document_tags          = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Arbol_v14 (Tags).c4d"
 
-def get_allObjs(root_selection):
-    def GetNextObject(op): # object manager iteration
-        if not op: return None
-        if op.GetDown(): return op.GetDown()
-        while not op.GetNext() and op.GetUp(): op = op.GetUp()
-        return op.GetNext()
-
-    # get first obj
-    first_obj = root_selection #doc.GetFirstObject()
-    if not first_obj:
-        return None
-    # list of all objects in the scene
-    list_objs = []
-    # add the first obj
-    list_objs.append(first_obj) 
-
-    # obj loop iteration
-    while first_obj:          
-        first_obj = GetNextObject(first_obj)
-        if first_obj:
-            list_objs.append(first_obj)
-
-    return list_objs
-
-def addTag(obj, tag_ID):
-    # get obj tags
-    obj_tags = obj.GetTags()
-
-    if not obj_tags:
-        tag = obj.MakeTag(tag_ID) # new tag
-    else:
-        obj_tags_types = [] # list of tag types
-        for t in obj_tags:
-            obj_tags_types.append(t.GetType())
-            if t.GetType() == tag_ID:
-                tag = t
-
-        if not tag_ID in obj_tags_types:
-            tag = obj.MakeTag(tag_ID)
-
-    return tag
+# ------------------------------------------------------
 
 def add_redshift_tag(obj, layer, geometry, tessellation, tess_min, tess_max, 
                     displacement, dis_max, dis_scale, dis_autobump, 
@@ -133,14 +93,6 @@ def tag_copy(obj_origin, tag_type, obj_target):
         else:
             None
 
-def add_layer(name,color):
-    root = doc.GetLayerObjectRoot()
-    layer = c4d.documents.LayerObject() # new Layer
-    layer.SetName(name)  
-    layer[c4d.ID_LAYER_COLOR] = color
-    layer.InsertUnder(root)
-    return layer
-
 def find_layer(layer_name):
     root = doc.GetLayerObjectRoot()
     LayersList = root.GetChildren() 
@@ -183,13 +135,6 @@ def make_editable(obj):
 def main():
     # ------------------------------------------------------
 
-    '''
-    # get objs
-    obj_list = get_allObjs(op)
-    if not obj_list:
-        gui.MessageDialog('please select the parent object.')
-        return
-    '''
     # load external alembic
     load_dlg = c4d.storage.LoadDialog(type=c4d.FILESELECTTYPE_ANYTHING, title="", flags=c4d.FILESELECT_LOAD, force_suffix="", def_path="", def_file="")
     if not load_dlg:
@@ -208,28 +153,20 @@ def main():
         else:
             obj_loop = False
 
-    #for obj in obj_list:
-    #    obj.SetBit(c4d.BIT_ACTIVE)
-
-    if len(obj_list) == 1:
-        nullm = obj_list[0].GetMg()
-    else:
-        nullm = c4d.Matrix()
-        nullm.off = sum([ob.GetMg().off for ob in obj_list])/ len(obj_list)
-    
+    # move all abc objs into a main parent null
     null = c4d.BaseObject(c4d.Onull)
-    null[c4d.ID_BASELIST_NAME] = 'nombre de prueba'
+    null_name = load_dlg.split('\\')
+    null_name = null_name[-1] ; null_name = null_name.split('.')
+    null[c4d.ID_BASELIST_NAME] = null_name[0]
     null.InsertBefore(obj_list[0])
     null.SetBit(c4d.BIT_ACTIVE)
-    null.SetMg(nullm)
-    
-    for ob in obj_list:
-        m = ob.GetMg()
-        ob.InsertUnderLast(null)
-        ob.DelBit(c4d.BIT_ACTIVE)
-        ob.SetMg(m)
-    
-    # meter null de rig en null de lights
+
+    for obj in obj_list:
+        obj.InsertUnderLast(null)
+
+    main_geo = doc.SearchObject('_geo_')
+    if main_geo:
+        null.InsertUnder(main_geo)
 
     # ------------------------------------------------------
     # import external documents
@@ -242,6 +179,9 @@ def main():
     # import eyes lights rig
     c4d.documents.MergeDocument(doc, tree_document_eyeslightrig, c4d.SCENEFILTER_OBJECTS|c4d.SCENEFILTER_MATERIALS , None)
     obj_eyes_lighstrig = doc.SearchObject('Eyes Rig') # find new object
+    main_lights = doc.SearchObject('_lights_') # find main lights group
+    if main_lights:
+        obj_eyes_lighstrig.InsertUnder(main_lights) # insert eyes lights rig inside main light group
 
     # ------------------------------------------------------
 
