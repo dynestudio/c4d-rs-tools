@@ -22,7 +22,8 @@ tree_layer_mats     = 'Materials_Arbol'
 tree_layer_objs     = 'Arbol'
 
 # external documents
-#tree_document_materials = 
+tree_document_materials     = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Arbol_v14 (Mats Only).c4d"
+tree_document_eyeslightrig  = "Y:\\My Drive\\Dyne - LLL\\Xmas Card 2019\\04_3D\\01_C4D\\02_ScnElements\\EP00_ACT00\\TrickyXmas_Materials_Arbol_v14 (Eyes lights rig).c4d"
 
 def get_allObjs(root_selection):
     def GetNextObject(op): # object manager iteration
@@ -150,20 +151,32 @@ def display_color(obj, color):
 
 # Main function
 def main():
+    # ------------------------------------------------------
+
     # get objs
     obj_list = get_allObjs(op)
     if not obj_list:
         gui.MessageDialog('please select the parent object.')
         return
+
+    # ------------------------------------------------------
+    # import external documents
+
+    # import materials and layers
+    c4d.documents.MergeDocument(doc, tree_document_materials, c4d.SCENEFILTER_OBJECTS|c4d.SCENEFILTER_MATERIALS , None)
+    obj_mat = doc.SearchObject('Materials_Arbol') # find new object
+    obj_mat.Remove() # delete null obj
+
+    # import eyes lights rig
+    c4d.documents.MergeDocument(doc, tree_document_eyeslightrig, c4d.SCENEFILTER_OBJECTS|c4d.SCENEFILTER_MATERIALS , None)
+    obj_eyes_lighstrig = doc.SearchObject('Eyes Rig') # find new object
+
+    # ------------------------------------------------------
+
     # get layer
     layer = find_layer(tree_layer_objs)
     if not layer:
-        question_string = "Not found geometry layer. \n Do you want create it?"
-        open_layer_question = c4d.gui.QuestionDialog(question_string)
-        if not open_layer_question:
             return
-        else:
-            layer = add_layer(tree_layer_objs,tree_color_geolayer)
 
     layer_mats = find_layer(tree_layer_mats)
     if not layer:
@@ -173,8 +186,17 @@ def main():
     mats            = doc.GetMaterials()
     mats_character  = []
     for mat in mats:
-        if mat[c4d.ID_LAYER_LINK].GetName() == tree_layer_mats:
-            mats_character.append(mat)
+        if  mat[c4d.ID_LAYER_LINK]:
+            if mat[c4d.ID_LAYER_LINK].GetName() == tree_layer_mats:
+                mats_character.append(mat)
+
+    # ------------------------------------------------------
+
+    # add eyes geometries into eyes lights rig
+    tree_eye_r = doc.SearchObject('R_XmasTree_eye')
+    tree_eye_l = doc.SearchObject('L_XmasTree_eye')
+    obj_eyes_lighstrig[c4d.ID_USERDATA,3] = tree_eye_r # add right eye
+    obj_eyes_lighstrig[c4d.ID_USERDATA,6] = tree_eye_l # add left eye
 
     # ------------------------------------------------------
 
