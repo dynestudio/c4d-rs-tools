@@ -371,8 +371,8 @@ def main():
             obj = make_editable(obj)
             display_color(obj,elf_color_cyan) # display color
             tag = tag_copy(obj_tag_body, c4d.Tpolygonselection,obj) # copy polygon selection tags
-            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[15]), TAG_TEXTURE_PROJECTION_SPHERICAL,tag.GetName()) # add material - Elf_Body
-            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[4]), TAG_TEXTURE_PROJECTION_SPHERICAL,'') # add material - Elf_Arms and Legs Cloth
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[15]), TAG_TEXTURE_PROJECTION_UVW,tag.GetName()) # add material - Elf_Body
+            addTexTag(obj, layer, find_mat(mats_character,elf_matslist[4]), TAG_TEXTURE_PROJECTION_UVW,'') # add material - Elf_Arms and Legs Cloth
             add_redshift_tag(obj,layer,0,0,0,0,False,0,0,0,True,True,True,42) # add redshift tag
             tag_copy(obj_tag_body, c4d.Tvertexmap,obj) # copy polygon selection tags
 
